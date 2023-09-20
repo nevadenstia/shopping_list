@@ -16,7 +16,7 @@ import datetime
 @login_required(login_url='/login')
 
 def show_main(request):
-    products = Product.objects.all()
+    products = Product.objects.filter(user=request.user)
 
     context = {
         'name': request.user.username, # Nama kamu
