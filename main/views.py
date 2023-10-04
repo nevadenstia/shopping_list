@@ -1,5 +1,5 @@
 from django.shortcuts import render , redirect
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseNotFound, HttpResponseRedirect
 from django.http import HttpResponse
 from django.core import serializers
 from main.forms import ProductForm
@@ -10,10 +10,27 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 import datetime
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 
 @login_required(login_url='/login')
+
+@csrf_exempt
+def add_product_ajax(request):
+    if request.method == 'POST':
+        name = request.POST.get("name")
+        price = request.POST.get("price")
+        description = request.POST.get("description")
+        user = request.user
+
+        new_product = Product(name=name, price=price, description=description, user=user)
+        new_product.save()
+
+        return HttpResponse(b"CREATED", status=201)
+    return HttpResponseNotFound()
+
+
 
 def show_main(request):
     products = Product.objects.filter(user=request.user)
@@ -38,6 +55,10 @@ def create_product(request):
 
     context = {'form': form}
     return render(request, "create_product.html", context)
+
+def get_product_json(request):
+    product_item = Product.objects.all()
+    return HttpResponse(serializers.serialize('json', product_item))
 
 def delete_product(request, id):
     # Get data berdasarkan ID
