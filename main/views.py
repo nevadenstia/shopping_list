@@ -33,16 +33,20 @@ def add_product_ajax(request):
 
 
 def show_main(request):
-    products = Product.objects.filter(user=request.user)
+    if request.user.is_authenticated:
+        products = Product.objects.filter(user=request.user)
+    else:
+        products = None
 
     context = {
-        'name': request.user.username, # Nama kamu
-        'class': 'PBP B', # Kelas PBP kamu
+        'name': request.user.username,
+        'class': 'PBP B',
         'products': products,
         'last_login': request.COOKIES['last_login'],
     }
 
     return render(request, "main.html", context)
+
 
 def create_product(request):
     form = ProductForm(request.POST or None)
